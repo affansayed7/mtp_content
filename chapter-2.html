@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 2 — SIM, IMSI & Authentication</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .value { font-size: 15px; font-weight: 600; }
+  .ascii { font-family: 'Courier New', monospace; font-size: 13px; color: #666; background: #f4f4f1; border-radius: 8px; padding: 0.75rem 1rem; line-height: 1.8; margin: 0.5rem 0; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 240px; }
+  .flow-arrow { text-align: center; font-size: 16px; color: #aaa; margin: 3px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .imsi-box { display: flex; gap: 0; margin: 0.75rem 0; border-radius: 10px; overflow: hidden; border: 1px solid #e8e8e4; }
+  .imsi-part { flex: 1; padding: 0.75rem; text-align: center; }
+  .imsi-part:not(:last-child) { border-right: 1px solid #e8e8e4; }
+  .imsi-code { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; }
+  .imsi-name { font-size: 11px; color: #999; margin-top: 4px; }
+  .imsi-desc { font-size: 12px; color: #666; margin-top: 2px; }
+  .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .sim-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; }
+  .sim-icon { font-size: 20px; margin-bottom: 6px; }
+  .phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .debug-card { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .debug-title { font-size: 13px; color: #854F0B; font-weight: 600; margin-bottom: 8px; }
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 8px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f4f4f1; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; color: #666; border-bottom: 1px solid #e8e8e4; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0ec; color: #444; }
+  tr:last-child td { border-bottom: none; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; align-items: start; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 2 — SIM, IMSI & authentication</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <!-- SIM CARD -->
+  <div class="section">
+    <div class="section-heading">SIM card — what it is</div>
+    <div class="insight">SIM = Subscriber Identity Module &nbsp;·&nbsp; Your digital identity card on the network</div>
+    <div class="sim-grid">
+      <div class="sim-card">
+        <div class="sim-icon">🆔</div>
+        <div class="value">IMSI</div>
+        <div style="font-size:13px; color:#666; margin-top:6px;">Who you are — your subscriber identity</div>
+        <div style="margin-top:8px;"><span class="tag tag-blue">Username equivalent</span></div>
+      </div>
+      <div class="sim-card">
+        <div class="sim-icon">🔑</div>
+        <div class="value">Secret Key (Ki)</div>
+        <div style="font-size:13px; color:#666; margin-top:6px;">Known only to SIM + Network. Never transmitted openly.</div>
+        <div style="margin-top:8px;"><span class="tag tag-purple">Password equivalent</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMSI STRUCTURE -->
+  <div class="section">
+    <div class="section-heading">IMSI structure</div>
+    <div style="font-size:13px; color:#666; margin-bottom:0.5rem;">International Mobile Subscriber Identity — unique 15-digit subscriber ID</div>
+    <div class="imsi-box">
+      <div class="imsi-part" style="background:#E6F1FB;">
+        <div class="imsi-code" style="color:#185FA5;">001</div>
+        <div class="imsi-name">MCC</div>
+        <div class="imsi-desc">Mobile Country Code</div>
+      </div>
+      <div class="imsi-part" style="background:#EEEDFE;">
+        <div class="imsi-code" style="color:#3C3489;">01</div>
+        <div class="imsi-name">MNC</div>
+        <div class="imsi-desc">Mobile Network Code<br>(Airtel, Jio, etc.)</div>
+      </div>
+      <div class="imsi-part" style="background:#E1F5EE;">
+        <div class="imsi-code" style="color:#085041;">000000001</div>
+        <div class="imsi-name">MSIN</div>
+        <div class="imsi-desc">Unique subscriber number</div>
+      </div>
+    </div>
+    <div class="insight-red">IMSI alone ≠ Authentication &nbsp;·&nbsp; Anyone can copy an IMSI!</div>
+  </div>
+
+  <!-- AUTHENTICATION -->
+  <div class="section">
+    <div class="section-heading">What authentication verifies</div>
+    <div class="card-row-3">
+      <div class="card" style="text-align:center;">
+        <span class="tag tag-green" style="margin-bottom:8px; display:inline-block;">✓ Exists</span>
+        <div style="font-size:13px; color:#555;">Is this IMSI valid?</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <span class="tag tag-green" style="margin-bottom:8px; display:inline-block;">✓ Genuine</span>
+        <div style="font-size:13px; color:#555;">Does subscriber know the secret key?</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <span class="tag tag-green" style="margin-bottom:8px; display:inline-block;">✓ Authorized</span>
+        <div style="font-size:13px; color:#555;">Can subscriber use network services?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETE FLOW -->
+  <div class="section">
+    <div class="section-heading">Complete flow — power on to internet</div>
+    <div class="two-col">
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box">Phone ON</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">Find gNB</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">Authentication</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-blue">Registration</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">PDU session request</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">IP address assigned</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-green">Internet access ✓</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">Phase 1 — Registration</div>
+          <div style="font-size:14px; font-weight:600; margin: 6px 0;">"Who are you?"</div>
+          <span class="tag tag-green">Authenticated ✓</span>
+          <span class="tag tag-green">Registered ✓</span>
+          <span class="tag tag-red">No internet ✗</span>
+        </div>
+        <div class="card">
+          <div class="label">Phase 2 — PDU session</div>
+          <div style="font-size:14px; font-weight:600; margin: 6px 0;">"How should traffic flow?"</div>
+          <span class="tag tag-green">IP assigned ✓</span>
+          <span class="tag tag-green">UPF selected ✓</span>
+          <span class="tag tag-green">Internet ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRATION vs PDU TABLE -->
+  <div class="section">
+    <div class="section-heading">Registration vs PDU session</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Registration</th>
+            <th>PDU session</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Verifies subscriber</td><td>Provides connectivity</td></tr>
+          <tr><td>Authentication</td><td>IP allocation</td></tr>
+          <tr><td>Subscriber validation</td><td>UPF selection</td></tr>
+          <tr><td>No internet yet</td><td>Internet available</td></tr>
+          <tr><td>"Who are you?"</td><td>"How should traffic flow?"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEBUGGING INSIGHT -->
+  <div class="section">
+    <div class="section-heading">Debugging insight</div>
+    <div class="debug-card">
+      <div class="debug-title">🛠️ If registration succeeds but ping fails →</div>
+      <div style="font-size:13px; color:#633806; line-height:1.8;">
+        Don't investigate authentication. Instead check:<br>
+        <span class="tag tag-amber">PDU Session</span>
+        <span class="tag tag-amber">SMF</span>
+        <span class="tag tag-amber">UPF</span>
+        <span class="tag tag-amber">Routing</span>
+        <span class="tag tag-amber">IP Allocation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is IMSI?</div>
+      <div class="viva-a">Unique 15-digit identity of a mobile subscriber — MCC + MNC + MSIN.</div>
+      <div class="viva-q">Q: What does a SIM store?</div>
+      <div class="viva-a">IMSI (identity) and Ki (secret authentication key).</div>
+      <div class="viva-q">Q: Why is authentication needed?</div>
+      <div class="viva-a">Because IMSI alone can be copied — authentication with Ki proves the subscriber is genuine.</div>
+      <div class="viva-q">Q: Does registration mean internet access?</div>
+      <div class="viva-a">No. Internet requires PDU Session Establishment after registration.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ A SIM contains subscriber identity (IMSI) and secret credentials (Ki). The network authenticates using Ki, completes registration, and only then establishes a PDU session to provide internet access.
+  </div>
+
+</div>
+</body>
+</html>
