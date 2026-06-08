@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 3 — Authentication in 5G</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .value { font-size: 15px; font-weight: 600; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 260px; }
+  .flow-arrow { text-align: center; font-size: 16px; color: #aaa; margin: 3px 0; }
+  .flow-label { text-align: center; font-size: 11px; color: #999; margin: 1px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-red { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .flow-box-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .nf-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .nf-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; }
+  .nf-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .nf-full { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .nf-analogy { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .nf-desc { font-size: 12px; color: #666; line-height: 1.6; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+  .debug-card { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .debug-title { font-size: 13px; color: #854F0B; font-weight: 600; margin-bottom: 10px; }
+  .storage-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+  .storage-arrow { text-align: center; font-size: 18px; color: #aaa; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 3 — Authentication in 5G</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <!-- THE PROBLEM -->
+  <div class="section">
+    <div class="section-heading">The problem with IMSI alone</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="label">Roll number analogy</div>
+        <div style="font-size:13px; color:#555; line-height:1.7; margin-top:4px;">
+          Anyone can know your roll number — but knowing it doesn't make you the student.<br><br>
+          Same with IMSI — it's not secret, anyone can copy it.
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Solution — challenge-response</div>
+        <div style="font-size:13px; color:#555; line-height:1.7; margin-top:4px;">
+          Network never asks: <em>"Give me your Ki"</em><br><br>
+          Instead: <em>"Prove you know Ki"</em><br><br>
+          Ki never leaves the SIM. Ever.
+        </div>
+      </div>
+    </div>
+    <div class="insight-red">IMSI = Username &nbsp;·&nbsp; Ki = Password &nbsp;·&nbsp; Ki NEVER transmitted openly</div>
+  </div>
+
+  <!-- AUTH FLOW -->
+  <div class="section">
+    <div class="section-heading">Challenge-response flow</div>
+    <div class="two-col">
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box flow-box-blue">UE</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-label">sends IMSI</div>
+          <div class="flow-box">Network</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-label">generates random challenge</div>
+          <div class="flow-box flow-box-blue">UE</div>
+          <div class="flow-label" style="font-size:12px; color:#555;">calculates: f(Challenge + Ki)</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-label">sends Response</div>
+          <div class="flow-box">Network</div>
+          <div class="flow-label" style="font-size:12px; color:#555;">calculates same f(Challenge + Ki)</div>
+          <div class="flow-arrow">↓</div>
+          <div style="display:flex; gap:0.5rem; margin-top:4px;">
+            <div class="flow-box flow-box-green" style="flex:1;">Match → ✅ Auth OK</div>
+            <div class="flow-box flow-box-red" style="flex:1;">Mismatch → ❌ Fail</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="label">Teacher analogy</div>
+          <div style="font-size:13px; color:#555; line-height:1.7; margin-top:4px;">
+            Teacher asks: <strong>"What is 47 × 89?"</strong><br>
+            Student answers correctly.<br>
+            Teacher concludes student knows multiplication — without asking for the entire table.<br><br>
+            Network asks: <strong>"Compute f(challenge)"</strong><br>
+            Only someone with the real Ki can answer correctly.
+          </div>
+        </div>
+        <div class="insight">Network never asks for Ki directly — only proof that you know it</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5G NETWORK FUNCTIONS -->
+  <div class="section">
+    <div class="section-heading">5G core functions involved</div>
+    <div class="nf-grid">
+      <div class="nf-card">
+        <div class="nf-name" style="color:#185FA5;">AMF</div>
+        <div class="nf-full">Access & Mobility Management Function</div>
+        <div class="nf-analogy">🛂 Reception desk</div>
+        <div class="nf-desc">Receives registration request. Coordinates authentication. Does NOT store subscribers.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#3C3489;">AUSF</div>
+        <div class="nf-full">Authentication Server Function</div>
+        <div class="nf-analogy">🔐 Security officer</div>
+        <div class="nf-desc">Runs the authentication procedure. Generates challenge, verifies response.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#085041;">UDM</div>
+        <div class="nf-full">Unified Data Management</div>
+        <div class="nf-analogy">📂 Records office</div>
+        <div class="nf-desc">Stores IMSI, Ki, subscription info. Provides data to AUSF during auth.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL AUTH SEQUENCE -->
+  <div class="section">
+    <div class="section-heading">Full authentication sequence</div>
+    <div class="flow-wrap">
+      <div class="flow-inner" style="min-width:300px;">
+        <div class="flow-box flow-box-blue">UE → Registration Request</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box">AMF — coordinates auth</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-purple">AUSF — requests subscriber data</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-teal">UDM — returns Ki + subscription info</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-purple">AUSF — generates challenge → UE</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-blue">UE — computes response using Ki</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-purple">AUSF — verifies response</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-green">Auth success → AMF → Registration continues</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORAGE DISTINCTION -->
+  <div class="section">
+    <div class="section-heading">Important distinction — logical vs physical storage</div>
+    <div class="card">
+      <div class="storage-row">
+        <div style="text-align:center;">
+          <div class="tag tag-teal" style="font-size:14px; padding: 6px 16px;">UDM</div>
+          <div style="font-size:12px; color:#666; margin-top:6px;">Logical owner of subscriber data</div>
+        </div>
+        <div class="storage-arrow">→</div>
+        <div style="text-align:center;">
+          <div class="tag tag-purple" style="font-size:14px; padding: 6px 16px;">MongoDB</div>
+          <div style="font-size:12px; color:#666; margin-top:6px;">Physical storage in Open5GS</div>
+        </div>
+      </div>
+    </div>
+    <div class="insight-teal">UDM owns the data logically — MongoDB stores it physically. Critical for debugging Open5GS.</div>
+  </div>
+
+  <!-- IF Ki MISMATCH -->
+  <div class="section">
+    <div class="section-heading">What if Ki values don't match?</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="label">Scenario</div>
+        <div style="font-size:13px; color:#555; line-height:1.7; margin-top:4px;">
+          UE Ki ≠ Network Ki<br><br>
+          Challenge sent → UE computes wrong response → Mismatch
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Result</div>
+        <div style="margin-top:6px;">
+          <span class="tag tag-red">Auth fails ✗</span><br>
+          <span class="tag tag-red">Registration fails ✗</span><br>
+          <span class="tag tag-red">PDU session never starts ✗</span>
+        </div>
+        <div style="font-size:12px; color:#888; margin-top:8px;">Everything stops at auth itself.</div>
+      </div>
+    </div>
+    <div class="insight-amber">Auth is a gate — if it fails, nothing below (registration, PDU, internet) can happen.</div>
+  </div>
+
+  <!-- DEBUG -->
+  <div class="section">
+    <div class="section-heading">Debugger mindset — when auth fails</div>
+    <div class="debug-card">
+      <div class="debug-title">🛠️ Initial Registration Failed → check in this order:</div>
+      <div style="font-size:13px; color:#633806; line-height:2;">
+        1. Wrong IMSI? &nbsp;<span class="tag tag-amber">Check UE config</span><br>
+        2. Wrong Ki / OPC? &nbsp;<span class="tag tag-amber">Check SIM vs DB</span><br>
+        3. Subscriber missing in DB? &nbsp;<span class="tag tag-amber">Check MongoDB</span><br>
+        4. AUSF down? &nbsp;<span class="tag tag-amber">systemctl status open5gs-ausfd</span><br>
+        5. UDM down? &nbsp;<span class="tag tag-amber">systemctl status open5gs-udmd</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is Ki?</div>
+      <div class="viva-a">Secret authentication key stored in SIM and network. Never transmitted.</div>
+      <div class="viva-q">Q: Why isn't IMSI enough for authentication?</div>
+      <div class="viva-a">IMSI is not secret — anyone can copy it. Ki-based challenge-response proves genuine identity.</div>
+      <div class="viva-q">Q: What does AUSF do?</div>
+      <div class="viva-a">Runs the authentication procedure — generates challenge, verifies UE response.</div>
+      <div class="viva-q">Q: What does UDM do?</div>
+      <div class="viva-a">Logically owns subscriber data (IMSI, Ki, subscription info). Physically stored in MongoDB.</div>
+      <div class="viva-q">Q: What does AMF do?</div>
+      <div class="viva-a">Handles registration and coordinates authentication — does not store subscriber data itself.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ 5G uses challenge-response authentication — AUSF verifies the UE knows Ki (via computed response), UDM provides subscriber data from MongoDB, and AMF coordinates the process. Ki never leaves the SIM.
+  </div>
+
+</div>
+</body>
+</html>
