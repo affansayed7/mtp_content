@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4 — 5G Core Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .value { font-size: 15px; font-weight: 600; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+  .tag-coral { background: #FAECE7; color: #993C1D; }
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  /* CONTROL vs USER PLANE */
+  .plane-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; }
+  .plane-card { border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid; }
+  .plane-cp { background: #EEEDFE; border-color: #AFA9EC; }
+  .plane-up { background: #E1F5EE; border-color: #9FE1CB; }
+  .plane-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .plane-cp .plane-title { color: #3C3489; }
+  .plane-up .plane-title { color: #085041; }
+  .plane-item { font-size: 13px; padding: 2px 0; }
+  .plane-cp .plane-item { color: #534AB7; }
+  .plane-up .plane-item { color: #0F6E56; }
+
+  /* NF CARDS */
+  .nf-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .nf-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; }
+  .nf-name { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+  .nf-full { font-size: 10px; color: #999; margin-bottom: 6px; line-height: 1.4; }
+  .nf-analogy { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
+  .nf-desc { font-size: 12px; color: #777; line-height: 1.6; }
+  .nf-does-not { font-size: 11px; color: #E24B4A; margin-top:6px; }
+
+  /* FLOWS */
+  .flows-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 180px; }
+  .flow-arrow { text-align: center; font-size: 14px; color: #aaa; margin: 2px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .flow-box-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .flow-title { font-size: 11px; font-weight: 600; color: #999; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f4f4f1; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; color: #666; border-bottom: 1px solid #e8e8e4; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0ec; color: #444; }
+  tr:last-child td { border-bottom: none; }
+
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+  .debug-card { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .debug-title { font-size: 13px; color: #854F0B; font-weight: 600; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 4 — 5G Core architecture</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <!-- WHY MICROSERVICES -->
+  <div class="section">
+    <div class="section-heading">Why not one giant server?</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="label">❌ Old approach</div>
+        <div style="font-size:13px; color:#555; line-height:1.8; margin-top:4px;">
+          One monolithic server doing everything:<br>
+          Auth + Mobility + Routing + Policies + Slicing<br><br>
+          Hard to debug. Hard to scale. One crash = everything down.
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">✅ 5G approach — microservices</div>
+        <div style="font-size:13px; color:#555; line-height:1.8; margin-top:4px;">
+          Each function does ONE job.<br>
+          AMF → registration<br>
+          AUSF → authentication<br>
+          UPF → traffic forwarding<br><br>
+          Easier to debug, scale, and maintain.
+        </div>
+      </div>
+    </div>
+    <div class="insight">5G Core = Microservices architecture — each NF has exactly one responsibility</div>
+  </div>
+
+  <!-- CONTROL vs USER PLANE — THE KEY SPLIT -->
+  <div class="section">
+    <div class="section-heading">Most important concept — control plane vs user plane</div>
+    <div class="plane-split">
+      <div class="plane-card plane-cp">
+        <div class="plane-title">🧠 Control Plane</div>
+        <div class="plane-item">AMF — registration, mobility</div>
+        <div class="plane-item">AUSF — authentication</div>
+        <div class="plane-item">UDM — subscriber data</div>
+        <div class="plane-item">SMF — session management</div>
+        <div class="plane-item">NSSF — slice selection</div>
+        <div class="plane-item">PCF — policies</div>
+        <div class="plane-item">NRF — service discovery</div>
+        <div style="font-size:12px; color:#7F77DD; margin-top:8px;">Makes decisions. Never touches user packets.</div>
+      </div>
+      <div class="plane-card plane-up">
+        <div class="plane-title">🚚 User Plane</div>
+        <div class="plane-item">UPF — packet forwarding</div>
+        <br>
+        <div style="font-size:12px; color:#0F6E56; margin-top:4px;">Carries actual traffic:<br>YouTube, ping, iperf3, camera streams</div>
+        <br>
+        <div style="font-size:12px; color:#0F6E56;">10 Gbps of video traffic? → UPF handles it. AMF never sees a single packet.</div>
+      </div>
+    </div>
+    <div class="insight-teal">Memorize this split — it explains 80% of 5G architecture decisions</div>
+  </div>
+
+  <!-- NF REFERENCE CARDS -->
+  <div class="section">
+    <div class="section-heading">Network functions — quick reference</div>
+    <div class="nf-grid">
+      <div class="nf-card">
+        <div class="nf-name" style="color:#185FA5;">AMF</div>
+        <div class="nf-full">Access & Mobility Management Function</div>
+        <div class="nf-analogy">🛂 Reception desk</div>
+        <div class="nf-desc">Registration, mobility, auth coordination.</div>
+        <div class="nf-does-not">✗ Does not carry traffic<br>✗ Does not assign IP</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#3C3489;">AUSF</div>
+        <div class="nf-full">Authentication Server Function</div>
+        <div class="nf-analogy">🔐 Security officer</div>
+        <div class="nf-desc">Runs challenge-response. Verifies Ki.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#085041;">UDM</div>
+        <div class="nf-full">Unified Data Management</div>
+        <div class="nf-analogy">📂 Records office</div>
+        <div class="nf-desc">Owns subscriber data logically. MongoDB stores it physically.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#993C1D;">SMF</div>
+        <div class="nf-full">Session Management Function</div>
+        <div class="nf-analogy">🎫 Flight booking</div>
+        <div class="nf-desc">Creates PDU sessions. Picks UPF, assigns IP, sets route.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#3B6D11;">UPF</div>
+        <div class="nf-full">User Plane Function</div>
+        <div class="nf-analogy">🛣️ The highway</div>
+        <div class="nf-desc">Forwards actual user packets. Most critical for your thesis. If UPF fails → no internet even if auth/registration succeed.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#854F0B;">NRF</div>
+        <div class="nf-full">Network Repository Function</div>
+        <div class="nf-analogy">📞 Phone directory</div>
+        <div class="nf-desc">Service discovery — tells AMF where SMF is, where AUSF is, etc.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#534AB7;">NSSF</div>
+        <div class="nf-full">Network Slice Selection Function</div>
+        <div class="nf-analogy">🚦 Traffic allocator</div>
+        <div class="nf-desc">Selects which slice a UE belongs to. Critical for your SDN slicing thesis.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#A32D2D;">PCF</div>
+        <div class="nf-full">Policy Control Function</div>
+        <div class="nf-analogy">📜 Rule book</div>
+        <div class="nf-desc">Defines QoS, bandwidth policies, traffic rules. AMF and SMF consult PCF.</div>
+      </div>
+      <div class="nf-card">
+        <div class="nf-name" style="color:#185FA5;">SCP</div>
+        <div class="nf-full">Service Communication Proxy</div>
+        <div class="nf-analogy">🔀 Router</div>
+        <div class="nf-desc">Routes SBI messages between NFs indirectly. If SCP is down → all 504 errors.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO FLOWS SIDE BY SIDE -->
+  <div class="section">
+    <div class="section-heading">Two key flows</div>
+    <div class="flows-row">
+      <div>
+        <div class="flow-title">Registration flow</div>
+        <div class="flow-wrap">
+          <div class="flow-inner">
+            <div class="flow-box flow-box-blue">UE</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box">gNB</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-purple">AMF</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-purple">AUSF</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-teal">UDM</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-green">Registration ✓</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="flow-title">Data flow (after registration)</div>
+        <div class="flow-wrap">
+          <div class="flow-inner">
+            <div class="flow-box flow-box-blue">UE</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box">gNB</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-purple">AMF → SMF</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box">SMF assigns IP + UPF</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-teal">UPF</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box flow-box-green">Internet ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIRPORT ANALOGY TABLE -->
+  <div class="section">
+    <div class="section-heading">Airport analogy — complete</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Airport</th><th>5G equivalent</th><th>Function</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Passenger</td><td><span class="tag tag-blue">UE</span></td><td>The subscriber</td></tr>
+          <tr><td>Airport gate</td><td><span class="tag tag-blue">gNB</span></td><td>Radio access</td></tr>
+          <tr><td>Reception desk</td><td><span class="tag tag-purple">AMF</span></td><td>Registration & mobility</td></tr>
+          <tr><td>Security officer</td><td><span class="tag tag-purple">AUSF</span></td><td>Authentication</td></tr>
+          <tr><td>Records office</td><td><span class="tag tag-teal">UDM</span></td><td>Subscriber data</td></tr>
+          <tr><td>Flight booking</td><td><span class="tag tag-coral">SMF</span></td><td>PDU session / IP</td></tr>
+          <tr><td>Traffic allocator</td><td><span class="tag tag-purple">NSSF</span></td><td>Slice selection</td></tr>
+          <tr><td>Rule book</td><td><span class="tag tag-red">PCF</span></td><td>QoS policies</td></tr>
+          <tr><td>Phone directory</td><td><span class="tag tag-amber">NRF</span></td><td>Service discovery</td></tr>
+          <tr><td>The highway</td><td><span class="tag tag-green">UPF</span></td><td>Actual packet forwarding</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEBUG -->
+  <div class="section">
+    <div class="section-heading">Debugging mindset</div>
+    <div class="debug-card">
+      <div class="debug-title">🛠️ Registration OK but no internet → always check UPF first</div>
+      <div style="font-size:13px; color:#633806; line-height:2;">
+        Auth success + Registration success + SMF success<br>
+        → but ping fails?<br><br>
+        <span class="tag tag-amber">Check UPF logs</span>
+        <span class="tag tag-amber">Check TUN interfaces (ogstun)</span>
+        <span class="tag tag-amber">Check GTP-U rules</span>
+        <span class="tag tag-amber">Check IP routing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: Which component carries user traffic?</div>
+      <div class="viva-a">UPF — User Plane Function. Only component in the user plane.</div>
+      <div class="viva-q">Q: Which component creates PDU sessions?</div>
+      <div class="viva-a">SMF — picks UPF, assigns IP, sets route.</div>
+      <div class="viva-q">Q: Which component selects slices?</div>
+      <div class="viva-a">NSSF — Network Slice Selection Function.</div>
+      <div class="viva-q">Q: What is the difference between control plane and user plane?</div>
+      <div class="viva-a">Control plane (AMF, SMF, AUSF etc.) makes decisions. User plane (UPF) forwards actual packets. They are separated so high-volume traffic doesn't overload control logic.</div>
+      <div class="viva-q">Q: What happens if NRF is down?</div>
+      <div class="viva-a">NFs can't discover each other — all SBI communication fails. Start NRF first, always.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ 5G Core is a microservices architecture split into control plane (AMF, SMF, AUSF, UDM, NSSF, PCF, NRF) for decision-making, and user plane (UPF) for actual packet forwarding. This separation is the single most important design principle in 5G.
+  </div>
+
+</div>
+</body>
+</html>
