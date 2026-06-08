@@ -1,0 +1,161 @@
+
+<style>
+  .notes { padding: 1rem 0; font-size: 15px; color: var(--color-text-primary); }
+  .chapter-title { font-size: 22px; font-weight: 500; margin-bottom: 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 2rem; }
+  .section { margin-bottom: 2rem; }
+  .section-heading { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 0.75rem; border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 0.4rem; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .value { font-size: 15px; font-weight: 500; }
+  .ascii { font-family: var(--font-mono); font-size: 13px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; line-height: 1.8; margin: 0.5rem 0; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 99px; margin: 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-gray { background: #F1EFE8; color: #5F5E5A; }
+  .insight { border-left: 3px solid #7F77DD; padding: 0.6rem 1rem; background: #EEEDFE; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 500; }
+  .vs { display: flex; gap: 0.75rem; align-items: stretch; }
+  .vs-card { flex: 1; border-radius: var(--border-radius-lg); padding: 0.875rem 1rem; border: 0.5px solid var(--color-border-tertiary); }
+  .vs-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .flow-arrow { text-align: center; font-size: 13px; color: var(--color-text-secondary); margin: 0.25rem 0; }
+  .flow-box { text-align: center; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.4rem 0.75rem; font-size: 13px; font-weight: 500; }
+  .phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .viva { background: #FAEEDA; border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; border: 0.5px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 500; margin-bottom: 6px; }
+  .viva-a { font-size: 14px; color: #633806; }
+  .summary { background: #E1F5EE; border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 0.5px solid #9FE1CB; }
+  @media (prefers-color-scheme: dark) {
+    .tag-green { background: #27500A; color: #C0DD97; }
+    .tag-red { background: #791F1F; color: #F7C1C1; }
+    .tag-blue { background: #0C447C; color: #B5D4F4; }
+    .tag-gray { background: #444441; color: #D3D1C7; }
+    .insight { background: #26215C; color: #CECBF6; border-color: #7F77DD; }
+    .viva { background: #412402; border-color: #854F0B; }
+    .viva-q { color: #FAC775; }
+    .viva-a { color: #FAEEDA; }
+    .summary { background: #04342C; color: #9FE1CB; border-color: #0F6E56; }
+  }
+</style>
+
+<div class="notes">
+  <div class="chapter-title">Chapter 1 — Why mobile networks exist</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <div class="section">
+    <div class="section-heading">The core question</div>
+    <div class="vs">
+      <div class="vs-card" style="background: var(--color-background-secondary);">
+        <div class="vs-title">Wi-Fi</div>
+        <div class="ascii">Laptop
+  │
+Router
+  │
+Internet</div>
+        <div style="font-size:13px; color: var(--color-text-secondary);">Works when user is <strong>stationary</strong>, small area, one router</div>
+      </div>
+      <div class="vs-card" style="background: var(--color-background-secondary);">
+        <div class="vs-title">Mobile at 100 km/h</div>
+        <div class="ascii">Phone → Tower → Tower
+  moving constantly</div>
+        <div style="font-size:13px; color: var(--color-text-secondary);">Needs tracking, auth, handover, internet <em>all at once</em></div>
+      </div>
+    </div>
+    <div class="insight">Cellular = Large-scale Wi-Fi + Mobility + Authentication</div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Basic architecture</div>
+    <div class="card-row-3">
+      <div class="card">
+        <div class="label">Layer 1</div>
+        <div class="value">UE</div>
+        <div style="font-size:13px; color:var(--color-text-secondary); margin-top:6px;">Smartphone, IoT, tablet</div>
+        <div class="tag tag-blue" style="margin-top:8px;">UERANSIM UE</div>
+      </div>
+      <div class="card">
+        <div class="label">Layer 2</div>
+        <div class="value">gNB / Tower</div>
+        <div style="font-size:13px; color:var(--color-text-secondary); margin-top:6px;">Radio access. 4G=eNB, 5G=gNB</div>
+        <div class="tag tag-blue" style="margin-top:8px;">UERANSIM gNB</div>
+      </div>
+      <div class="card">
+        <div class="label">Layer 3</div>
+        <div class="value">Core Network</div>
+        <div style="font-size:13px; color:var(--color-text-secondary); margin-top:6px;">Auth, mobility, policies, slicing</div>
+        <div class="tag tag-blue" style="margin-top:8px;">Open5GS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Phone power-on flow</div>
+    <div class="card" style="max-width: 260px; margin: 0 auto;">
+      <div class="flow-box">Phone ON</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">Find network</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">Authenticate</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">Register</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">PDU session request</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box" style="background:#EAF3DE; color:#3B6D11;">Internet access ✓</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Most common misconception</div>
+    <div class="phase-grid">
+      <div class="card">
+        <div class="label">Phase 1 — Registration</div>
+        <div style="font-size:14px; margin: 6px 0;">"Who are you?"</div>
+        <span class="tag tag-green">User known ✓</span>
+        <span class="tag tag-red">No internet ✗</span>
+      </div>
+      <div class="card">
+        <div class="label">Phase 2 — PDU session</div>
+        <div style="font-size:14px; margin: 6px 0;">"What do you need?"</div>
+        <span class="tag tag-green">IP address ✓</span>
+        <span class="tag tag-green">Internet ✓</span>
+      </div>
+    </div>
+    <div class="insight">Registration ≠ Internet access &nbsp;·&nbsp; Two separate phases!</div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Airport analogy</div>
+    <div class="card-row-3">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:6px;">🛃</div>
+        <div class="label">Registration</div>
+        <div style="font-size:13px;">Security check — "Who are you?"</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:6px;">🎫</div>
+        <div class="label">PDU session</div>
+        <div style="font-size:13px;">Boarding pass — "Permission to travel"</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:6px;">✈️</div>
+        <div class="label">Data transfer</div>
+        <div style="font-size:13px;">Flight takes off — journey begins</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Viva question</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is the first thing a cellular network must do when a phone powers on?</div>
+      <div class="viva-a">Authenticate and register the subscriber — verifying identity, validity, and authorisation before any internet access is granted.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ A cellular network exists to provide authenticated, mobile, large-scale connectivity — maintaining user identity, mobility, and internet access simultaneously.
+  </div>
+</div>
