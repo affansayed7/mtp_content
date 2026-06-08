@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 5 — Registration Flow End-to-End</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: grid; grid-template-columns: 48px 1fr; gap: 0.75rem; align-items: start; margin-bottom: 0.5rem; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .step-num-default { background: #f4f4f1; color: #555; border: 1px solid #e8e8e4; }
+  .step-num-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .step-num-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .step-num-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .step-num-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .step-content { background: #fff; border: 1px solid #e8e8e4; border-radius: 10px; padding: 0.75rem 1rem; }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: #666; line-height: 1.6; }
+  .step-connector { width: 2px; height: 12px; background: #e8e8e4; margin: 0 0 0 22px; }
+
+  /* FAILURE CARDS */
+  .failure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .failure-card { background: #FCEBEB; border: 1px solid #F7C1C1; border-radius: 12px; padding: 1rem 1.25rem; }
+  .failure-title { font-size: 12px; font-weight: 700; color: #A32D2D; margin-bottom: 6px; }
+  .failure-desc { font-size: 13px; color: #791F1F; line-height: 1.6; }
+
+  /* DEBUG STAGES */
+  .debug-stage { display: grid; grid-template-columns: 28px 1fr; gap: 0.75rem; margin-bottom: 0.5rem; align-items: start; }
+  .debug-stage-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+  .debug-content { background: #fff; border: 1px solid #e8e8e4; border-radius: 10px; padding: 0.6rem 1rem; }
+  .debug-stage-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .debug-stage-desc { font-size: 12px; color: #666; }
+
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 220px; }
+  .flow-arrow { text-align: center; font-size: 14px; color: #aaa; margin: 2px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .flow-box-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .flow-box-red { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+  .flow-label { text-align: center; font-size: 11px; color: #999; margin: 1px 0; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 5 — Registration flow end-to-end</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <!-- STEP BY STEP -->
+  <div class="section">
+    <div class="section-heading">Registration — step by step</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num step-num-default">1</div>
+        <div class="step-content">
+          <div class="step-title">Cell search</div>
+          <div class="step-desc">UE powers on with no idea which network is nearby. Searches for any gNB broadcasting on correct PLMN (MCC+MNC). In lab: UERANSIM UE searches for UERANSIM gNB.</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num step-num-blue">2</div>
+        <div class="step-content">
+          <div class="step-title">Radio connection (RRC)</div>
+          <div class="step-desc">UE establishes radio link with gNB.
+            <span class="tag tag-green" style="margin-top:6px; display:inline-block;">Physical link ✓</span>
+            <span class="tag tag-red">Auth ✗</span>
+            <span class="tag tag-red">Internet ✗</span>
+          </div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num step-num-purple">3</div>
+        <div class="step-content">
+          <div class="step-title">Registration Request → AMF</div>
+          <div class="step-desc">UE sends Registration Request via gNB → AMF. Contains IMSI/SUCI (identity). Think: student showing ID card at university gate.</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num step-num-purple">4</div>
+        <div class="step-content">
+          <div class="step-title">Authentication — AMF → AUSF → UDM</div>
+          <div class="step-desc">AMF triggers auth via AUSF. UDM checks subscriber exists and returns Ki. AUSF runs challenge-response. If Ki mismatch → stops here.</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num step-num-teal">5</div>
+        <div class="step-content">
+          <div class="step-title">Security mode setup</div>
+          <div class="step-desc">Network and UE establish encrypted security context. Like HTTPS handshake — protects all subsequent messages from eavesdropping.</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num step-num-green">6</div>
+        <div class="step-content">
+          <div class="step-title">Registration Accept + Complete</div>
+          <div class="step-desc">AMF sends Registration Accept. UE replies Registration Complete. UE is now officially registered.
+            <span class="tag tag-green" style="margin-top:6px; display:inline-block;">Registered ✓</span>
+            <span class="tag tag-red">Internet still not guaranteed ✗</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMMON FAILURES -->
+  <div class="section">
+    <div class="section-heading">Common failure points</div>
+    <div class="failure-grid">
+      <div class="failure-card">
+        <div class="failure-title">❌ Failure at Step 3 — Request never reaches AMF</div>
+        <div class="failure-desc">
+          Wrong AMF IP in gNB config<br>
+          AMF service down<br>
+          Firewall blocking SCTP/38412<br>
+          gNB ↔ AMF connectivity broken
+        </div>
+      </div>
+      <div class="failure-card">
+        <div class="failure-title">❌ Failure at Step 4 — Authentication fails</div>
+        <div class="failure-desc">
+          Wrong IMSI (subscriber not in DB)<br>
+          Ki / OPC mismatch<br>
+          AUSF or UDM service down<br>
+          SCP down → 504 errors
+        </div>
+      </div>
+    </div>
+    <div class="insight-red">Know which step failed first — subscriber issues only matter AFTER the request reaches AMF</div>
+  </div>
+
+  <!-- FULL FLOW + WHAT'S CHECKED -->
+  <div class="section">
+    <div class="section-heading">Full flow with failure mapping</div>
+    <div class="two-col">
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box flow-box-blue">UE powers on</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">Cell search → gNB found</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">Registration Request → AMF</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">AUSF → UDM → Auth</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-teal">Security setup</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-green">Registration Accept ✓</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">PDU session → SMF → UPF</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-green">Internet ✓</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">If gNB not found</div>
+          <div style="font-size:13px; color:#555; margin-top:4px; line-height:1.7;">Check PLMN (MCC/MNC), TAC, gNB config, RF settings</div>
+        </div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">If AMF not reached</div>
+          <div style="font-size:13px; color:#555; margin-top:4px; line-height:1.7;">Check AMF IP in gNB config, AMF service status, firewall (SCTP 38412)</div>
+        </div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">If auth fails</div>
+          <div style="font-size:13px; color:#555; margin-top:4px; line-height:1.7;">Check IMSI in DB, Ki/OPC values, AUSF/UDM running, SCP running</div>
+        </div>
+        <div class="card">
+          <div class="label">If registered but no internet</div>
+          <div style="font-size:13px; color:#555; margin-top:4px; line-height:1.7;">Check SMF, UPF, TUN interfaces, IP routing, NAT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGED DEBUG MODEL -->
+  <div class="section">
+    <div class="section-heading">Staged debugging model — most important mental model</div>
+    <div class="debug-stage">
+      <div class="debug-stage-num" style="background:#f4f4f1; color:#555; border: 1px solid #e8e8e4;">0</div>
+      <div class="debug-content">
+        <div class="debug-stage-title">UE can't find gNB</div>
+        <div class="debug-stage-desc">Check: PLMN config, TAC, gNB RF settings, UERANSIM gnb.yaml</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-stage">
+      <div class="debug-stage-num" style="background:#E6F1FB; color:#185FA5; border: 1px solid #85B7EB;">1</div>
+      <div class="debug-content">
+        <div class="debug-stage-title">UE found gNB, AMF not reached</div>
+        <div class="debug-stage-desc">Check: gNB ↔ AMF connectivity, AMF IP, open5gs-amfd status, SCTP port 38412</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-stage">
+      <div class="debug-stage-num" style="background:#EEEDFE; color:#3C3489; border: 1px solid #AFA9EC;">2</div>
+      <div class="debug-content">
+        <div class="debug-stage-title">AMF reached, authentication fails</div>
+        <div class="debug-stage-desc">Check: IMSI in MongoDB, Ki/OPC match, AUSF/UDM/SCP running, amf.log for 504 errors</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-stage">
+      <div class="debug-stage-num" style="background:#EAF3DE; color:#3B6D11; border: 1px solid #C0DD97;">3</div>
+      <div class="debug-content">
+        <div class="debug-stage-title">Registration OK, no internet</div>
+        <div class="debug-stage-desc">Check: SMF session creation, UPF running, ogstun interfaces, IP routing, NAT rules</div>
+      </div>
+    </div>
+    <div class="insight-amber">Always identify the stage first — don't jump to subscriber issues if AMF never received the request</div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: Which component receives Registration Request?</div>
+      <div class="viva-a">AMF — via gNB over NGAP/N2 interface.</div>
+      <div class="viva-q">Q: What is the order of steps in registration?</div>
+      <div class="viva-a">Cell search → RRC connection → Registration Request → Authentication → Security setup → Registration Accept → Registration Complete.</div>
+      <div class="viva-q">Q: UE found gNB but AMF never receives request. What do you check?</div>
+      <div class="viva-a">gNB ↔ AMF connectivity — wrong AMF IP in gNB config, AMF service down, or firewall blocking SCTP port 38412. Subscriber issues are irrelevant at this stage.</div>
+      <div class="viva-q">Q: Can registration succeed without internet access?</div>
+      <div class="viva-a">Yes — registration and PDU session are separate phases. Internet needs PDU session via SMF + UPF after registration.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ Registration follows: cell search → RRC → Registration Request (AMF) → authentication (AUSF+UDM) → security setup → Registration Accept. Debug by stage — identify exactly where the failure occurred before investigating the cause.
+  </div>
+
+</div>
+</body>
+</html>
