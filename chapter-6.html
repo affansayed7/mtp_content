@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 6 — PDU Session & Internet Access</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+  .tag-coral { background: #FAECE7; color: #993C1D; }
+
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 220px; }
+  .flow-arrow { text-align: center; font-size: 14px; color: #aaa; margin: 2px 0; }
+  .flow-label { text-align: center; font-size: 11px; color: #999; margin: 1px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-red { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .flow-box-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .flow-box-amber { background: #FAEEDA; color: #854F0B; border: 1px solid #FAC775; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+
+  .plane-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .plane-card { border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid; }
+  .plane-cp { background: #EEEDFE; border-color: #AFA9EC; }
+  .plane-up { background: #E1F5EE; border-color: #9FE1CB; }
+  .plane-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .plane-cp .plane-title { color: #3C3489; }
+  .plane-up .plane-title { color: #085041; }
+  .plane-item { font-size: 13px; padding: 2px 0; }
+  .plane-cp .plane-item { color: #534AB7; }
+  .plane-up .plane-item { color: #0F6E56; }
+
+  .nat-box { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; }
+  .nat-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+  .nat-cell { background: #f4f4f1; border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 13px; font-weight: 500; font-family: monospace; text-align: center; }
+  .nat-arrow { text-align: center; font-size: 18px; color: #aaa; }
+  .nat-cell-amber { background: #FAEEDA; color: #854F0B; }
+  .nat-cell-teal { background: #E1F5EE; color: #085041; }
+
+  .thesis-card { background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 12px; padding: 1rem 1.25rem; }
+  .thesis-title { font-size: 13px; font-weight: 700; color: #3C3489; margin-bottom: 10px; }
+
+  .debug-row { display: grid; grid-template-columns: 28px 1fr; gap: 0.75rem; margin-bottom: 0.5rem; align-items: start; }
+  .debug-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .debug-content { background: #fff; border: 1px solid #e8e8e4; border-radius: 10px; padding: 0.6rem 1rem; }
+  .debug-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .debug-desc { font-size: 12px; color: #666; }
+  .step-connector { width: 2px; height: 10px; background: #e8e8e4; margin: 0 0 0 13px; }
+
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 6 — PDU session & internet access</div>
+  <div class="subtitle">5G Core fundamentals · quick reference</div>
+
+  <!-- WHAT IS PDU SESSION -->
+  <div class="section">
+    <div class="section-heading">What is a PDU session?</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="label">Definition</div>
+        <div style="font-size:14px; font-weight:600; margin: 6px 0;">A logical data connection between UE and a Data Network</div>
+        <div style="font-size:13px; color:#666; line-height:1.7;">After registration, UE is known to network but has no IP, no route, no internet. PDU session provides all three.</div>
+      </div>
+      <div class="card">
+        <div class="label">Who manages it?</div>
+        <div style="font-size:14px; font-weight:600; margin:6px 0;">SMF is the hero here</div>
+        <div style="font-size:13px; color:#666; line-height:1.7;">
+          SMF decides:<br>
+          · Which UPF to use<br>
+          · Which IP to assign<br>
+          · Which route to set<br>
+          · Which slice it belongs to
+        </div>
+      </div>
+    </div>
+    <div class="insight-amber">Registration = "Who are you?" &nbsp;·&nbsp; PDU Session = "Let's create your internet connection"</div>
+  </div>
+
+  <!-- PDU SESSION FLOW -->
+  <div class="section">
+    <div class="section-heading">PDU session establishment flow</div>
+    <div class="two-col">
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box flow-box-blue">UE — PDU Session Request</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box">gNB</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">AMF — forwards to SMF</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">SMF — selects UPF, assigns IP</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-teal">UPF — session created</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-green">UE gets 10.45.0.x + uesimtun0 ✓</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">After PDU session</div>
+          <div style="margin-top:6px;">
+            <span class="tag tag-green">IP assigned ✓</span>
+            <span class="tag tag-green">uesimtun0 up ✓</span>
+            <span class="tag tag-green">UPF path ready ✓</span>
+          </div>
+          <div style="font-size:12px; color:#888; margin-top:8px;">But internet still needs NAT — see below.</div>
+        </div>
+        <div class="card">
+          <div class="label">Actual traffic path (data plane)</div>
+          <div style="font-size:13px; color:#555; line-height:1.8; margin-top:4px;">
+            UE → gNB → <strong>UPF → Internet</strong><br>
+            AMF disappears from traffic path.<br>
+            UPF is the only user-plane component.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="insight">AMF handles registration. SMF handles session. UPF carries all actual traffic. Never mix these roles.</div>
+  </div>
+
+  <!-- CONTROL vs USER PLANE REMINDER -->
+  <div class="section">
+    <div class="section-heading">Why traffic bypasses AMF — the key design principle</div>
+    <div class="plane-split">
+      <div class="plane-card plane-cp">
+        <div class="plane-title">🧠 Control plane — decisions</div>
+        <div class="plane-item">AMF — registration</div>
+        <div class="plane-item">SMF — session management</div>
+        <div class="plane-item">AUSF/UDM — auth</div>
+        <div style="font-size:12px; color:#7F77DD; margin-top:8px;">Never touches actual packets</div>
+      </div>
+      <div class="plane-card plane-up">
+        <div class="plane-title">🛣️ User plane — packets</div>
+        <div class="plane-item">UPF — forwards everything</div>
+        <br>
+        <div style="font-size:12px; color:#0F6E56;">YouTube, ping, iperf3, camera — all go through UPF only. 10 Gbps of traffic? AMF never sees a packet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAT SECTION -->
+  <div class="section">
+    <div class="section-heading">How UE traffic reaches internet — NAT</div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="label">The problem</div>
+      <div style="font-size:13px; color:#555; line-height:1.7; margin-top:4px;">
+        UE gets private IP <strong>10.45.0.2</strong> — not routable on public internet. Google doesn't know how to reply to 10.45.0.2.
+      </div>
+    </div>
+    <div class="nat-box">
+      <div class="label" style="margin-bottom:8px;">NAT translation at UPF</div>
+      <div class="nat-row">
+        <div class="nat-cell nat-cell-amber">SRC: 10.45.0.2<br>DST: 8.8.8.8</div>
+        <div class="nat-arrow">→</div>
+        <div class="nat-cell nat-cell-teal">SRC: Host_Public_IP<br>DST: 8.8.8.8</div>
+      </div>
+      <div style="text-align:center; font-size:12px; color:#999; margin: 4px 0;">UPF applies MASQUERADE / NAT rule</div>
+      <div class="nat-row">
+        <div class="nat-cell nat-cell-teal">SRC: 8.8.8.8<br>DST: Host_Public_IP</div>
+        <div class="nat-arrow">→</div>
+        <div class="nat-cell nat-cell-amber">SRC: 8.8.8.8<br>DST: 10.45.0.2</div>
+      </div>
+      <div style="text-align:center; font-size:12px; color:#999; margin-top:4px;">UPF translates reply back to UE</div>
+    </div>
+    <div class="insight-teal">In Open5GS: <code style="background:#f4f4f1; padding:2px 6px; border-radius:4px; font-size:12px;">iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE</code></div>
+  </div>
+
+  <!-- THESIS RELEVANCE -->
+  <div class="section">
+    <div class="section-heading">Why this matters for your thesis</div>
+    <div class="thesis-card">
+      <div class="thesis-title">🎓 Your MTP — SDN-based 5G slicing revolves around UPF</div>
+      <div class="card-row" style="margin-top:0.5rem;">
+        <div style="background:#fff; border-radius:10px; padding:0.75rem 1rem; border:1px solid #AFA9EC;">
+          <div class="label">Shared UPF</div>
+          <div style="font-size:13px; color:#534AB7; margin-top:4px; line-height:1.7;">
+            Slice A ──┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPF<br>
+            Slice B ──┘<br>
+            One UPF handles both slices
+          </div>
+        </div>
+        <div style="background:#fff; border-radius:10px; padding:0.75rem 1rem; border:1px solid #AFA9EC;">
+          <div class="label">Dedicated UPF</div>
+          <div style="font-size:13px; color:#534AB7; margin-top:4px; line-height:1.7;">
+            Slice A → UPF1<br>
+            Slice B → UPF2<br><br>
+            Isolated traffic paths per slice
+          </div>
+        </div>
+      </div>
+      <div style="font-size:13px; color:#534AB7; margin-top:10px; line-height:1.6;">Your iperf3 experiments measure how traffic behaves differently across these two UPF architectures — that's the core of your thesis comparison.</div>
+    </div>
+  </div>
+
+  <!-- COMPLETE FAILURE CHAIN -->
+  <div class="section">
+    <div class="section-heading">Complete failure chain — what breaks what</div>
+    <div class="flow-wrap">
+      <div class="flow-inner" style="min-width:320px;">
+        <div class="flow-box flow-box-green">Auth + Registration ✓</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box flow-box-green">PDU Session ✓ → IP: 10.45.0.2</div>
+        <div class="flow-arrow">↓</div>
+        <div style="display:flex; gap:0.5rem;">
+          <div style="flex:1;">
+            <div class="flow-box flow-box-red">NAT missing ✗</div>
+            <div style="font-size:11px; color:#A32D2D; text-align:center; margin-top:4px;">IP exists, ping 8.8.8.8 fails</div>
+          </div>
+          <div style="flex:1;">
+            <div class="flow-box flow-box-red">UPF down ✗</div>
+            <div style="font-size:11px; color:#A32D2D; text-align:center; margin-top:4px;">No IP assigned at all</div>
+          </div>
+          <div style="flex:1;">
+            <div class="flow-box flow-box-red">SMF down ✗</div>
+            <div style="font-size:11px; color:#A32D2D; text-align:center; margin-top:4px;">PDU session creation fails</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="insight-red">IP assigned ≠ Internet working &nbsp;·&nbsp; Always verify with ping 8.8.8.8</div>
+  </div>
+
+  <!-- DEBUGGER CHECKLIST -->
+  <div class="section">
+    <div class="section-heading">Debugger checklist — no internet after registration</div>
+    <div class="debug-row">
+      <div class="debug-num" style="background:#EEEDFE; color:#3C3489; border:1px solid #AFA9EC;">1</div>
+      <div class="debug-content">
+        <div class="debug-title">Did UE get an IP?</div>
+        <div class="debug-desc"><code>ip addr show uesimtun0</code> — if no IP → SMF or UPF issue</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-row">
+      <div class="debug-num" style="background:#EEEDFE; color:#3C3489; border:1px solid #AFA9EC;">2</div>
+      <div class="debug-content">
+        <div class="debug-title">Is UPF running?</div>
+        <div class="debug-desc"><code>systemctl status open5gs-upfd</code> — check ogstun interfaces exist</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-row">
+      <div class="debug-num" style="background:#EEEDFE; color:#3C3489; border:1px solid #AFA9EC;">3</div>
+      <div class="debug-content">
+        <div class="debug-title">Does NAT rule exist?</div>
+        <div class="debug-desc"><code>iptables -t nat -L -n</code> — MASQUERADE rule for 10.45.0.0/16 must be present</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="debug-row">
+      <div class="debug-num" style="background:#EEEDFE; color:#3C3489; border:1px solid #AFA9EC;">4</div>
+      <div class="debug-content">
+        <div class="debug-title">Is routing correct?</div>
+        <div class="debug-desc"><code>ip route</code> — default route must exist on UPF host</div>
+      </div>
+    </div>
+    <div class="insight-amber">At this stage — don't check AUSF, UDM, or authentication. They already succeeded.</div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is a PDU session?</div>
+      <div class="viva-a">A logical data connection between UE and a Data Network, providing IP address and internet path via SMF + UPF.</div>
+      <div class="viva-q">Q: Which NF creates the PDU session?</div>
+      <div class="viva-a">SMF — selects UPF, assigns IP context, establishes the data path.</div>
+      <div class="viva-q">Q: Why does UE traffic not pass through AMF?</div>
+      <div class="viva-a">Control plane (AMF/SMF) makes decisions, user plane (UPF) carries packets. This separation prevents AMF from being overloaded by high-volume traffic.</div>
+      <div class="viva-q">Q: UE gets 10.45.0.2 but ping 8.8.8.8 fails. What do you check?</div>
+      <div class="viva-a">NAT/MASQUERADE rules at UPF — private IP 10.45.0.2 needs NAT to be routable on public internet. Also check UPF routing and ogstun interfaces.</div>
+      <div class="viva-q">Q: What is the difference between shared and dedicated UPF in slicing?</div>
+      <div class="viva-a">Shared UPF: all slices share one UPF instance. Dedicated UPF: each slice gets its own UPF for traffic isolation. Your thesis compares performance between these two.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ After registration, SMF creates a PDU session — assigning IP (10.45.0.x) and selecting UPF. UPF carries all user traffic and applies NAT so private UE IPs can reach the public internet. IP assignment alone does not guarantee internet access — NAT rules must exist.
+  </div>
+
+</div>
+</body>
+</html>
