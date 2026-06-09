@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 7 — What Exactly Is UPF?</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  /* RESPONSIBILITIES */
+  .resp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .resp-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 0.875rem 1.1rem; }
+  .resp-num { font-size: 11px; font-weight: 700; color: #999; margin-bottom: 4px; }
+  .resp-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .resp-desc { font-size: 12px; color: #666; line-height: 1.6; }
+
+  /* SHARED vs DEDICATED */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .shared-card { background: #FAEEDA; border: 1px solid #FAC775; border-radius: 12px; padding: 1rem 1.25rem; }
+  .dedicated-card { background: #E1F5EE; border: 1px solid #9FE1CB; border-radius: 12px; padding: 1rem 1.25rem; }
+  .compare-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .shared-card .compare-title { color: #854F0B; }
+  .dedicated-card .compare-title { color: #085041; }
+  .compare-item { font-size: 13px; padding: 2px 0; line-height: 1.7; }
+  .shared-card .compare-item { color: #633806; }
+  .dedicated-card .compare-item { color: #0F6E56; }
+  .arch-box { font-family: 'Courier New', monospace; font-size: 13px; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 0.6rem 0.8rem; margin: 8px 0; line-height: 1.8; color: #555; }
+
+  /* CONTENTION TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f4f4f1; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; color: #666; border-bottom: 1px solid #e8e8e4; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0ec; color: #444; }
+  tr:last-child td { border-bottom: none; }
+
+  /* RESEARCH CARD */
+  .research-card { background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 12px; padding: 1rem 1.25rem; }
+  .research-title { font-size: 13px; font-weight: 700; color: #3C3489; margin-bottom: 10px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 7 — What exactly is UPF?</div>
+  <div class="subtitle">5G Core fundamentals · quick reference · most important for your thesis</div>
+
+  <!-- WHY UPF EXISTS -->
+  <div class="section">
+    <div class="section-heading">Why UPF exists</div>
+    <div class="card">
+      <div class="label">Without UPF, nobody answers these questions:</div>
+      <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+        <span class="tag tag-red">Who assigns IPs?</span>
+        <span class="tag tag-red">Who does NAT?</span>
+        <span class="tag tag-red">Who enforces QoS?</span>
+        <span class="tag tag-red">Who isolates slices?</span>
+        <span class="tag tag-red">Who collects traffic stats?</span>
+      </div>
+    </div>
+    <div class="insight">UPF = Router + Gateway + NAT device + Traffic Manager — all in one</div>
+  </div>
+
+  <!-- RESPONSIBILITIES -->
+  <div class="section">
+    <div class="section-heading">UPF responsibilities</div>
+    <div class="resp-grid">
+      <div class="resp-card">
+        <div class="resp-num">01</div>
+        <div class="resp-title">Packet forwarding</div>
+        <div class="resp-desc">All user traffic passes through — ping, YouTube, iperf3, camera streams. Every single packet.</div>
+      </div>
+      <div class="resp-card">
+        <div class="resp-num">02</div>
+        <div class="resp-title">NAT</div>
+        <div class="resp-desc">Translates private UE IP (10.45.0.x) to host public IP so packets can reach internet and return.</div>
+      </div>
+      <div class="resp-card">
+        <div class="resp-num">03</div>
+        <div class="resp-title">QoS enforcement</div>
+        <div class="resp-desc">Prioritizes traffic — emergency/URLLC traffic over best-effort eMBB traffic.</div>
+      </div>
+      <div class="resp-card">
+        <div class="resp-num">04</div>
+        <div class="resp-title">Slice enforcement</div>
+        <div class="resp-desc">Enforces traffic isolation between slices. Slice A traffic must not bleed into Slice B.</div>
+      </div>
+      <div class="resp-card">
+        <div class="resp-num">05</div>
+        <div class="resp-title">Traffic steering</div>
+        <div class="resp-desc">Decides where packets should be forwarded — internet, MEC server, or another UPF.</div>
+      </div>
+      <div class="resp-card">
+        <div class="resp-num">06</div>
+        <div class="resp-title">Statistics collection</div>
+        <div class="resp-desc">Reports per-flow stats to SMF — used for billing, monitoring, your iperf3 measurements.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED vs DEDICATED -->
+  <div class="section">
+    <div class="section-heading">Shared UPF vs dedicated UPF — your thesis core</div>
+    <div class="compare-grid">
+      <div class="shared-card">
+        <div class="compare-title">⚠️ Shared UPF</div>
+        <div class="arch-box">Slice A ──┐<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── UPF<br>Slice B ──┘</div>
+        <div class="compare-item">✅ Less hardware</div>
+        <div class="compare-item">✅ Easier deployment</div>
+        <div class="compare-item">✅ Lower cost</div>
+        <div class="compare-item">❌ Resource contention</div>
+        <div class="compare-item">❌ Increased delay under load</div>
+        <div class="compare-item">❌ Possible packet loss</div>
+        <div class="compare-item">❌ Reduced isolation</div>
+      </div>
+      <div class="dedicated-card">
+        <div class="compare-title">✅ Dedicated UPF</div>
+        <div class="arch-box">Slice A → UPF1<br>Slice B → UPF2</div>
+        <div class="compare-item">✅ Full traffic isolation</div>
+        <div class="compare-item">✅ Predictable QoS</div>
+        <div class="compare-item">✅ Better performance guarantees</div>
+        <div class="compare-item">❌ More resources needed</div>
+        <div class="compare-item">❌ Higher complexity</div>
+        <div class="compare-item">❌ Higher cost</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENTION EFFECTS -->
+  <div class="section">
+    <div class="section-heading">What resource contention does in shared UPF</div>
+    <div class="card">
+      <div style="font-size:13px; color:#666; margin-bottom:10px;">UE1 (heavy video) + UE2 (critical traffic) sharing one UPF — both compete for:</div>
+      <table>
+        <thead>
+          <tr><th>Resource</th><th>Effect on UE2</th><th>Metric impacted</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CPU / processing</td><td>Slower packet handling</td><td>Latency ↑</td></tr>
+          <tr><td>Memory / buffers</td><td>Queue builds up</td><td>Delay ↑, Jitter ↑</td></tr>
+          <tr><td>Queue space</td><td>Buffer overflow → drops</td><td>Packet loss ↑</td></tr>
+          <tr><td>Network bandwidth</td><td>Less bandwidth available</td><td>Throughput ↓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight-red">This is exactly what your iperf3 experiments are designed to measure</div>
+  </div>
+
+  <!-- RESEARCH INSIGHT -->
+  <div class="section">
+    <div class="section-heading">Research insight — the real question</div>
+    <div class="research-card">
+      <div class="research-title">🎓 What your thesis is actually answering</div>
+      <div style="font-size:13px; color:#534AB7; line-height:1.8;">
+        Dedicated UPF is not always better — operators prefer shared UPF for cost and simplicity.<br><br>
+        The real research question is:<br>
+        <strong>"At what load does a shared UPF become problematic?"</strong><br><br>
+        Your metrics — throughput, delay, packet loss, bandwidth utilization — quantify exactly this.<br><br>
+        Future extension → ML-based prediction: <em>Can we detect UPF overload before QoS degrades?</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is the role of UPF in 5G?</div>
+      <div class="viva-a">UPF is the sole user-plane component — it forwards all user packets, performs NAT, enforces QoS and slice isolation, and collects traffic statistics.</div>
+      <div class="viva-q">Q: Why might a shared UPF become a bottleneck?</div>
+      <div class="viva-a">Multiple slices compete for the same CPU, memory, buffers, and bandwidth inside one UPF. Heavy traffic from one slice can increase latency, jitter, and packet loss for other slices.</div>
+      <div class="viva-q">Q: What are the trade-offs of dedicated UPF?</div>
+      <div class="viva-a">Better isolation and predictable performance — but requires more hardware, higher cost, and greater management complexity.</div>
+      <div class="viva-q">Q: Registration succeeds but UPF is down. What happens?</div>
+      <div class="viva-a">PDU session fails — UE gets no IP. Even if SMF runs, without UPF there is no data path and no internet access.</div>
+      <div class="viva-q">Q: Which component controls UPF in 5G?</div>
+      <div class="viva-a">SMF controls UPF via PFCP (Packet Forwarding Control Protocol) — SMF is control plane, UPF is user plane.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ UPF is the user-plane gateway responsible for packet forwarding, NAT, QoS, and slice enforcement. Shared UPF is cost-efficient but risks resource contention under load. Dedicated UPF provides isolation but at higher cost. Your thesis measures exactly where this trade-off breaks down.
+  </div>
+
+</div>
+</body>
+</html>
