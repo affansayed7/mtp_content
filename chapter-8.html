@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 8 — Network Slicing</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  /* SLICE TYPES */
+  .slice-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .slice-card { border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid; }
+  .slice-urllc { background: #FCEBEB; border-color: #F7C1C1; }
+  .slice-embb  { background: #E6F1FB; border-color: #85B7EB; }
+  .slice-mmtc  { background: #E1F5EE; border-color: #9FE1CB; }
+  .slice-name  { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .slice-urllc .slice-name { color: #A32D2D; }
+  .slice-embb  .slice-name { color: #185FA5; }
+  .slice-mmtc  .slice-name { color: #085041; }
+  .slice-full  { font-size: 10px; color: #999; margin-bottom: 8px; }
+  .slice-item  { font-size: 12px; padding: 2px 0; line-height: 1.7; }
+  .slice-urllc .slice-item { color: #791F1F; }
+  .slice-embb  .slice-item { color: #0C447C; }
+  .slice-mmtc  .slice-item { color: #0F6E56; }
+
+  /* S-NSSAI BOX */
+  .nssai-box { display: flex; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e4; margin: 0.75rem 0; }
+  .nssai-part { flex: 1; padding: 0.875rem 1rem; text-align: center; }
+  .nssai-part:not(:last-child) { border-right: 1px solid #e8e8e4; }
+  .nssai-code { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 700; }
+  .nssai-name { font-size: 11px; color: #999; margin-top: 4px; }
+  .nssai-desc { font-size: 12px; color: #666; margin-top: 2px; }
+
+  /* SLICE SELECTION FLOW */
+  .sel-flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+  .sel-box { background: #f4f4f1; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 13px; text-align: center; border: 1px solid #e8e8e4; }
+  .sel-box-green { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+  .sel-box-red { background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1; }
+  .sel-arrow { text-align: center; font-size: 18px; color: #aaa; }
+
+  /* COMPARE */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .shared-card { background: #FAEEDA; border: 1px solid #FAC775; border-radius: 12px; padding: 1rem 1.25rem; }
+  .dedicated-card { background: #E1F5EE; border: 1px solid #9FE1CB; border-radius: 12px; padding: 1rem 1.25rem; }
+  .compare-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .shared-card .compare-title { color: #854F0B; }
+  .dedicated-card .compare-title { color: #085041; }
+  .compare-item { font-size: 13px; padding: 2px 0; line-height: 1.7; }
+  .shared-card .compare-item { color: #633806; }
+  .dedicated-card .compare-item { color: #0F6E56; }
+  .arch-box { font-family: 'Courier New', monospace; font-size: 13px; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 0.6rem 0.8rem; margin: 8px 0; line-height: 1.8; color: #555; }
+
+  /* CONGESTION SEQUENCE */
+  .cong-row { display: flex; gap: 0.5rem; align-items: stretch; margin: 0.75rem 0; }
+  .cong-step { flex: 1; border-radius: 10px; padding: 0.75rem; text-align: center; border: 1px solid; }
+  .cong-arrow { display: flex; align-items: center; color: #aaa; font-size: 20px; }
+  .cong-1 { background: #FAEEDA; border-color: #FAC775; }
+  .cong-2 { background: #FCEBEB; border-color: #F7C1C1; }
+  .cong-3 { background: #FCEBEB; border-color: #E24B4A; }
+  .cong-4 { background: #791F1F; border-color: #A32D2D; }
+  .cong-title { font-size: 12px; font-weight: 700; }
+  .cong-1 .cong-title { color: #854F0B; }
+  .cong-2 .cong-title { color: #A32D2D; }
+  .cong-3 .cong-title { color: #A32D2D; }
+  .cong-4 .cong-title { color: #fff; }
+  .cong-desc { font-size: 11px; margin-top: 4px; }
+  .cong-1 .cong-desc { color: #633806; }
+  .cong-2 .cong-desc { color: #791F1F; }
+  .cong-3 .cong-desc { color: #791F1F; }
+  .cong-4 .cong-desc { color: #FCEBEB; }
+
+  /* METRICS TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f4f4f1; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; color: #666; border-bottom: 1px solid #e8e8e4; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0ec; color: #444; }
+  tr:last-child td { border-bottom: none; }
+  .good { color: #3B6D11; font-weight: 600; }
+  .bad  { color: #A32D2D; font-weight: 600; }
+
+  .research-card { background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 12px; padding: 1rem 1.25rem; }
+  .research-title { font-size: 13px; font-weight: 700; color: #3C3489; margin-bottom: 10px; }
+
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 240px; }
+  .flow-arrow { text-align: center; font-size: 14px; color: #aaa; margin: 2px 0; }
+  .flow-label { text-align: center; font-size: 11px; color: #999; margin: 1px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-red   { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-teal  { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .flow-box-blue  { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .step-connector { width: 2px; height: 10px; background: #e8e8e4; margin: 0 0 0 13px; }
+
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+  code { background: #f4f4f1; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', monospace; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 8 — Network slicing</div>
+  <div class="subtitle">5G Core fundamentals · quick reference · directly relevant to your thesis</div>
+
+  <!-- WHAT IS A SLICE -->
+  <div class="section">
+    <div class="section-heading">What is a network slice?</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="label">Beginner definition</div>
+        <div style="font-size:14px; font-weight:600; margin:6px 0;">A virtual copy of the network</div>
+        <div style="font-size:13px; color:#666;">Close to correct — but incomplete.</div>
+      </div>
+      <div class="card">
+        <div class="label">Precise definition</div>
+        <div style="font-size:14px; font-weight:600; margin:6px 0;">A logically isolated network customized for a specific service</div>
+        <div style="font-size:13px; color:#666;">Same physical infra, different behavior, QoS, and policies.</div>
+      </div>
+    </div>
+    <div class="insight">Same physical infrastructure → Multiple logical networks running on top</div>
+    <div class="card" style="margin-top:0.75rem;">
+      <div class="label">What makes slices different from each other</div>
+      <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+        <span class="tag tag-purple">QoS / Priority</span>
+        <span class="tag tag-purple">Latency requirements</span>
+        <span class="tag tag-purple">Bandwidth allocation</span>
+        <span class="tag tag-purple">Reliability</span>
+        <span class="tag tag-purple">UPF selection</span>
+        <span class="tag tag-purple">Traffic policies</span>
+        <span class="tag tag-purple">Security rules</span>
+      </div>
+    </div>
+    <div class="insight-red">A slice is NOT a separate tower, gNB, or physical network — it's a logical construct</div>
+  </div>
+
+  <!-- 3 SLICE TYPES -->
+  <div class="section">
+    <div class="section-heading">3 standard slice types (SST values)</div>
+    <div class="slice-grid">
+      <div class="slice-card slice-urllc">
+        <div class="slice-name">URLLC</div>
+        <div class="slice-full">Ultra-Reliable Low Latency · SST=1</div>
+        <div class="slice-item">Latency &lt; 5ms</div>
+        <div class="slice-item">Reliability &gt; 99.999%</div>
+        <div class="slice-item">Remote surgery, autonomous vehicles</div>
+        <div style="margin-top:8px;"><span class="tag tag-red">Your UE1 → SST:1</span></div>
+      </div>
+      <div class="slice-card slice-embb">
+        <div class="slice-name">eMBB</div>
+        <div class="slice-full">Enhanced Mobile Broadband · SST=2</div>
+        <div class="slice-item">High throughput</div>
+        <div class="slice-item">Moderate latency</div>
+        <div class="slice-item">AR/VR, 4K video, iperf3</div>
+        <div style="margin-top:8px;"><span class="tag tag-blue">Your UE2 → SST:2</span></div>
+      </div>
+      <div class="slice-card slice-mmtc">
+        <div class="slice-name">mMTC</div>
+        <div class="slice-full">Massive Machine Type Comm · SST=3</div>
+        <div class="slice-item">Low bandwidth per device</div>
+        <div class="slice-item">Massive device count</div>
+        <div class="slice-item">IoT sensors, smart meters</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S-NSSAI -->
+  <div class="section">
+    <div class="section-heading">S-NSSAI — how slices are identified</div>
+    <div style="font-size:13px; color:#666; margin-bottom:0.5rem;">Single Network Slice Selection Assistance Information — the slice identifier used everywhere in Open5GS</div>
+    <div class="nssai-box">
+      <div class="nssai-part" style="background:#E6F1FB;">
+        <div class="nssai-code" style="color:#185FA5;">SST</div>
+        <div class="nssai-name">Slice/Service Type</div>
+        <div class="nssai-desc">1=URLLC, 2=eMBB, 3=mMTC<br>Mandatory field</div>
+      </div>
+      <div class="nssai-part" style="background:#EEEDFE;">
+        <div class="nssai-code" style="color:#3C3489;">SD</div>
+        <div class="nssai-name">Slice Differentiator</div>
+        <div class="nssai-desc">000000 to FFFFFF<br>Optional — distinguishes multiple slices of same SST</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">In your Open5GS config</div>
+      <div style="font-family:'Courier New',monospace; font-size:13px; color:#555; margin-top:6px; line-height:1.8;">
+        UE1: sst=1, sd='000000' &nbsp;→&nbsp; URLLC slice<br>
+        UE2: sst=2, sd='000000' &nbsp;→&nbsp; eMBB slice<br>
+        AMF/SMF/UPF all reference same S-NSSAI values
+      </div>
+    </div>
+    <div class="insight-teal">S-NSSAI must match in: UE config, subscriber DB (MongoDB), AMF, SMF, UPF — all 5 places</div>
+  </div>
+
+  <!-- SLICE SELECTION FLOW -->
+  <div class="section">
+    <div class="section-heading">How slice selection works — who decides what</div>
+    <div class="two-col">
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box flow-box-blue">UE — requests S-NSSAI</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-label">Registration Request</div>
+          <div class="flow-box flow-box-purple">AMF</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">NSSF — validate slice</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-teal">UDM — subscriber allowed?</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-purple">SMF — select UPF for slice</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-box flow-box-green">Slice assigned ✓</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="label">Slice approval check</div>
+          <div class="sel-flow">
+            <div class="sel-box">UE requests<br>sst:1 sd:000000</div>
+            <div class="sel-arrow">→</div>
+            <div class="sel-box sel-box-green">DB allows<br>sst:1 sd:000000 ✓</div>
+          </div>
+          <div class="sel-flow">
+            <div class="sel-box">UE requests<br>sst:1 sd:000003</div>
+            <div class="sel-arrow">→</div>
+            <div class="sel-box sel-box-red">DB has<br>sst:1 sd:000000 ✗</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="label">UE can only request — not decide</div>
+          <div style="font-size:13px; color:#666; margin-top:4px; line-height:1.6;">UDM/MongoDB is the authoritative source. Even if UE requests a premium slice, if it's not in subscriber profile → rejected.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLICE ≠ UPF -->
+  <div class="section">
+    <div class="section-heading">Critical distinction — slice ≠ UPF</div>
+    <div class="compare-grid">
+      <div class="card">
+        <div class="label">A slice defines</div>
+        <div style="margin-top:6px;">
+          <span class="tag tag-purple">Service requirements</span>
+          <span class="tag tag-purple">QoS policies</span>
+          <span class="tag tag-purple">Logical isolation</span>
+          <span class="tag tag-purple">Traffic rules</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">A UPF defines</div>
+        <div style="margin-top:6px;">
+          <span class="tag tag-teal">Packet forwarding</span>
+          <span class="tag tag-teal">NAT</span>
+          <span class="tag tag-teal">Physical processing</span>
+          <span class="tag tag-teal">GTP-U tunnels</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight-amber">Multiple slices → One UPF (shared) &nbsp;OR&nbsp; One slice → One UPF (dedicated) — both are valid architectures</div>
+  </div>
+
+  <!-- SHARED vs DEDICATED -->
+  <div class="section">
+    <div class="section-heading">Shared UPF vs dedicated UPF — your thesis comparison</div>
+    <div class="compare-grid">
+      <div class="shared-card">
+        <div class="compare-title">⚠️ Shared UPF</div>
+        <div class="arch-box">Slice A (URLLC) ──┐<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── UPF<br>Slice B (eMBB) ───┘</div>
+        <div class="compare-item">✅ Lower cost</div>
+        <div class="compare-item">✅ Simpler deployment</div>
+        <div class="compare-item">❌ Resource contention</div>
+        <div class="compare-item">❌ Delay ↑ under load</div>
+        <div class="compare-item">❌ Jitter ↑</div>
+        <div class="compare-item">❌ Packet loss possible</div>
+      </div>
+      <div class="dedicated-card">
+        <div class="compare-title">✅ Dedicated UPF</div>
+        <div class="arch-box">Slice A → UPF1<br>Slice B → UPF2</div>
+        <div class="compare-item">✅ Full traffic isolation</div>
+        <div class="compare-item">✅ Predictable QoS</div>
+        <div class="compare-item">✅ Lower delay</div>
+        <div class="compare-item">✅ Lower jitter</div>
+        <div class="compare-item">❌ More hardware needed</div>
+        <div class="compare-item">❌ Higher complexity</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONGESTION SEQUENCE -->
+  <div class="section">
+    <div class="section-heading">Congestion progression in shared UPF</div>
+    <div style="font-size:13px; color:#666; margin-bottom:0.75rem;">UE1 starts 1 Gbps iperf3 + UE2 has critical traffic → shared UPF degrades in this order:</div>
+    <div class="cong-row">
+      <div class="cong-step cong-1">
+        <div class="cong-title">1st — Delay ↑</div>
+        <div class="cong-desc">Packets queue up. Avg latency increases from 5ms → 20ms+</div>
+      </div>
+      <div class="cong-arrow">→</div>
+      <div class="cong-step cong-2">
+        <div class="cong-title">2nd — Jitter ↑</div>
+        <div class="cong-desc">Latency becomes inconsistent. Bad for VoIP, gaming, URLLC</div>
+      </div>
+      <div class="cong-arrow">→</div>
+      <div class="cong-step cong-3">
+        <div class="cong-title">3rd — Packet loss</div>
+        <div class="cong-desc">Buffer overflows. Packets dropped. Loss % increases.</div>
+      </div>
+      <div class="cong-arrow">→</div>
+      <div class="cong-step cong-4">
+        <div class="cong-title">Last — Throughput ↓</div>
+        <div class="cong-desc">Network tries hard to keep forwarding. Collapses last.</div>
+      </div>
+    </div>
+    <div class="insight-red">Delay is the first symptom — which is why iperf3 alone (throughput only) is not enough for research</div>
+  </div>
+
+  <!-- METRICS TABLE -->
+  <div class="section">
+    <div class="section-heading">Expected metric comparison — your thesis results</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Metric</th><th>Tool</th><th>Shared UPF</th><th>Dedicated UPF</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Throughput</td><td><code>iperf3</code></td><td class="bad">Lower under load</td><td class="good">Stable</td></tr>
+          <tr><td>Delay</td><td><code>ping</code></td><td class="bad">High (20ms+)</td><td class="good">Low (5ms)</td></tr>
+          <tr><td>Jitter</td><td><code>iperf3 -u</code></td><td class="bad">High / inconsistent</td><td class="good">Low / stable</td></tr>
+          <tr><td>Packet loss</td><td><code>iperf3 -u</code></td><td class="bad">~2% under load</td><td class="good">~0.1%</td></tr>
+          <tr><td>Bandwidth util</td><td><code>iperf3</code></td><td class="bad">Contested</td><td class="good">Per-slice isolated</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESEARCH INSIGHT -->
+  <div class="section">
+    <div class="section-heading">Research insight</div>
+    <div class="research-card">
+      <div class="research-title">🎓 Your actual thesis question</div>
+      <div style="font-size:13px; color:#534AB7; line-height:1.8;">
+        Not: "Can slicing work?" — we know it works.<br><br>
+        Real question: <strong>"At what load does a shared UPF become problematic for URLLC slices?"</strong><br><br>
+        Future: Can AI/ML predict UPF overload <em>before</em> QoS degrades, and trigger dynamic slice reconfiguration via SDN?<br><br>
+        That's the bridge from your current testbed → publishable M.Tech thesis.
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: What is a network slice?</div>
+      <div class="viva-a">A logically isolated network customized for a specific service, running on top of shared physical infrastructure.</div>
+      <div class="viva-q">Q: What is S-NSSAI?</div>
+      <div class="viva-a">Single Network Slice Selection Assistance Information — composed of SST (slice type: 1=URLLC, 2=eMBB, 3=mMTC) and SD (differentiator). Used to identify slices across all 5G NFs.</div>
+      <div class="viva-q">Q: Can a slice exist without a dedicated UPF?</div>
+      <div class="viva-a">Yes — multiple slices can share a single UPF. Slice and UPF are different concepts. SMF decides which UPF serves which slice.</div>
+      <div class="viva-q">Q: Which metric degrades first in a congested shared UPF?</div>
+      <div class="viva-a">Delay — packets queue up first. Then jitter increases, followed by packet loss, and finally throughput collapse.</div>
+      <div class="viva-q">Q: Where must S-NSSAI be configured in Open5GS?</div>
+      <div class="viva-a">In 5 places: UE config (UERANSIM), subscriber profile (MongoDB), AMF, SMF, and UPF yamls. Mismatch in any one causes slice rejection.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ A network slice is a logically isolated virtual network on shared physical infra, identified by S-NSSAI (SST+SD). Slices ≠ UPFs — SMF decides UPF mapping. Shared UPF causes resource contention (delay→jitter→loss→throughput). Your thesis measures exactly this degradation and asks when it becomes problematic.
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 10 — Packet Journey Through Your Lab</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f7; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+  .chapter-title { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 2.5rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; padding-bottom: 0.4rem; }
+  .card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .label { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 99px; margin: 3px 2px; font-weight: 500; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-purple { background: #EEEDFE; color: #3C3489; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-teal { background: #E1F5EE; color: #085041; }
+
+  .insight { border-left: 3px solid #7F77DD; padding: 0.7rem 1rem; background: #EEEDFE; border-radius: 0 8px 8px 0; font-size: 14px; color: #3C3489; margin: 0.75rem 0; font-weight: 600; }
+  .insight-red { border-left: 3px solid #E24B4A; padding: 0.7rem 1rem; background: #FCEBEB; border-radius: 0 8px 8px 0; font-size: 14px; color: #A32D2D; margin: 0.75rem 0; font-weight: 600; }
+  .insight-teal { border-left: 3px solid #1D9E75; padding: 0.7rem 1rem; background: #E1F5EE; border-radius: 0 8px 8px 0; font-size: 14px; color: #085041; margin: 0.75rem 0; font-weight: 600; }
+  .insight-amber { border-left: 3px solid #EF9F27; padding: 0.7rem 1rem; background: #FAEEDA; border-radius: 0 8px 8px 0; font-size: 14px; color: #854F0B; margin: 0.75rem 0; font-weight: 600; }
+
+  /* LAB TOPOLOGY */
+  .topo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .topo-card { border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid; }
+  .pc1 { background: #E6F1FB; border-color: #85B7EB; }
+  .pc2 { background: #EEEDFE; border-color: #AFA9EC; }
+  .pc3 { background: #E1F5EE; border-color: #9FE1CB; }
+  .pc-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .pc1 .pc-name { color: #185FA5; }
+  .pc2 .pc-name { color: #3C3489; }
+  .pc3 .pc-name { color: #085041; }
+  .pc-role { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .pc-item { font-size: 13px; padding: 2px 0; line-height: 1.7; }
+  .pc1 .pc-item { color: #0C447C; }
+  .pc2 .pc-item { color: #534AB7; }
+  .pc3 .pc-item { color: #0F6E56; }
+
+  /* STEP CARDS */
+  .step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .step-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 0.875rem 1.1rem; }
+  .step-num { font-size: 11px; font-weight: 700; color: #999; margin-bottom: 4px; }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .step-desc { font-size: 12px; color: #666; line-height: 1.6; }
+  .step-path { font-family: 'Courier New', monospace; font-size: 12px; background: #f4f4f1; border-radius: 6px; padding: 0.4rem 0.6rem; margin-top: 6px; color: #555; line-height: 1.8; }
+
+  /* PLANE SPLIT */
+  .plane-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .plane-card { border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid; }
+  .plane-cp { background: #EEEDFE; border-color: #AFA9EC; }
+  .plane-up { background: #E1F5EE; border-color: #9FE1CB; }
+  .plane-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .plane-cp .plane-title { color: #3C3489; }
+  .plane-up .plane-title { color: #085041; }
+  .plane-item { font-size: 13px; padding: 2px 0; line-height: 1.7; }
+  .plane-cp .plane-item { color: #534AB7; }
+  .plane-up .plane-item { color: #0F6E56; }
+
+  /* DEBUG CHEATSHEET */
+  .debug-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .debug-card { border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid; }
+  .debug-fail { background: #FCEBEB; border-color: #F7C1C1; }
+  .debug-perf { background: #FAEEDA; border-color: #FAC775; }
+  .debug-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .debug-fail .debug-title { color: #A32D2D; }
+  .debug-perf .debug-title { color: #854F0B; }
+  .debug-item { font-size: 12px; padding: 2px 0; line-height: 1.7; }
+  .debug-fail .debug-item { color: #791F1F; }
+  .debug-perf .debug-item { color: #633806; }
+  code { background: #f4f4f1; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', monospace; }
+
+  .flow-wrap { display: flex; justify-content: center; }
+  .flow-inner { min-width: 240px; }
+  .flow-arrow { text-align: center; font-size: 14px; color: #aaa; margin: 2px 0; }
+  .flow-label { text-align: center; font-size: 11px; color: #999; margin: 1px 0; }
+  .flow-box { text-align: center; background: #f4f4f1; border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 13px; font-weight: 500; border: 1px solid #e8e8e4; margin-bottom: 2px; }
+  .flow-box-green { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+  .flow-box-purple { background: #EEEDFE; color: #3C3489; border: 1px solid #AFA9EC; }
+  .flow-box-blue { background: #E6F1FB; color: #185FA5; border: 1px solid #85B7EB; }
+  .flow-box-teal { background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB; }
+  .flow-box-amber { background: #FAEEDA; color: #854F0B; border: 1px solid #FAC775; }
+  .flow-box-red { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+
+  /* MINDSET CARDS */
+  .mindset-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .mindset-card { border-radius: 12px; padding: 1rem; border: 1px solid; text-align: center; }
+  .mindset-zero { background: #FCEBEB; border-color: #F7C1C1; }
+  .mindset-low { background: #FAEEDA; border-color: #FAC775; }
+  .mindset-zero .mindset-val { font-size: 22px; font-weight: 700; color: #A32D2D; }
+  .mindset-low .mindset-val { font-size: 22px; font-weight: 700; color: #854F0B; }
+  .mindset-label { font-size: 12px; font-weight: 600; margin: 6px 0 4px; }
+  .mindset-zero .mindset-label { color: #A32D2D; }
+  .mindset-low .mindset-label { color: #854F0B; }
+  .mindset-desc { font-size: 12px; color: #666; }
+
+  .viva { background: #FAEEDA; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #FAC775; }
+  .viva-q { font-size: 13px; color: #854F0B; font-weight: 600; margin: 8px 0 4px; }
+  .viva-a { font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 6px; }
+  .summary { background: #E1F5EE; border-radius: 12px; padding: 1rem 1.25rem; font-size: 14px; color: #085041; font-weight: 500; border: 1px solid #9FE1CB; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="chapter-title">Chapter 10 — Packet journey through your lab</div>
+  <div class="subtitle">5G Core fundamentals · your actual physical testbed</div>
+
+  <!-- LAB TOPOLOGY -->
+  <div class="section">
+    <div class="section-heading">Your physical setup</div>
+    <div class="topo-grid">
+      <div class="topo-card pc1">
+        <div class="pc-name">PC-1</div>
+        <div class="pc-role">Raspberry Pi — UEs</div>
+        <div class="pc-item">📱 UE1 (SST:1 URLLC)</div>
+        <div class="pc-item">📱 UE2 (SST:2 eMBB)</div>
+        <div class="pc-item">📱 UE3</div>
+        <div class="pc-item">📱 UE4</div>
+        <div style="margin-top:8px;"><span class="tag tag-blue">UERANSIM UE</span></div>
+      </div>
+      <div class="topo-card pc2">
+        <div class="pc-name">PC-2</div>
+        <div class="pc-role">HP Workstation — gNB</div>
+        <div class="pc-item">📡 UERANSIM gNB</div>
+        <div class="pc-item">IP: 192.168.1.20</div>
+        <div class="pc-item">NGAP → AMF:38412</div>
+        <div class="pc-item">GTP-U → UPF</div>
+        <div style="margin-top:8px;"><span class="tag tag-purple">Fake 5G Tower</span></div>
+      </div>
+      <div class="topo-card pc3">
+        <div class="pc-name">PC-3</div>
+        <div class="pc-role">HP Workstation — 5G Core</div>
+        <div class="pc-item">AMF · SMF · UPF</div>
+        <div class="pc-item">AUSF · UDM · NRF</div>
+        <div class="pc-item">NSSF · SCP · PCF</div>
+        <div class="pc-item">MongoDB</div>
+        <div class="pc-item">IP: 192.168.1.10</div>
+        <div style="margin-top:8px;"><span class="tag tag-teal">Open5GS Core</span></div>
+      </div>
+    </div>
+    <div class="insight">Switch is just Ethernet — logical path is always: UE → gNB → 5G Core</div>
+  </div>
+
+  <!-- REGISTRATION JOURNEY -->
+  <div class="section">
+    <div class="section-heading">Scenario 1 — registration journey (steps 1–7)</div>
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="step-num">STEP 1</div>
+        <div class="step-title">Cell search</div>
+        <div class="step-desc">UE1 powers on, searches for gNB on correct PLMN (999/70).</div>
+        <div class="step-path">PC-1 → PC-2</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 2</div>
+        <div class="step-title">RRC connection</div>
+        <div class="step-desc">Radio link established. UE ↔ gNB only. No auth, no internet.</div>
+        <div class="step-path">PC-1 ↔ PC-2</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 3</div>
+        <div class="step-title">Registration Request → AMF</div>
+        <div class="step-desc">UE sends IMSI/SUCI via gNB to AMF over NGAP (SCTP port 38412).</div>
+        <div class="step-path">PC-1 → PC-2 → PC-3 (AMF)</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 4</div>
+        <div class="step-title">Authentication</div>
+        <div class="step-desc">AMF → AUSF → UDM → MongoDB. All internal to PC-3. Never crosses switch.</div>
+        <div class="step-path">PC-3 internal only</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 5-6</div>
+        <div class="step-title">Slice selection</div>
+        <div class="step-desc">NSSF verifies SST+SD matches subscriber profile in MongoDB. UE1 → SST:1, UE2 → SST:2.</div>
+        <div class="step-path">PC-3 internal — NSSF + UDM</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 7</div>
+        <div class="step-title">Registration complete</div>
+        <div class="step-desc">UE is registered. Known to network. Still no IP, no internet.</div>
+        <div class="step-path" style="background:#EAF3DE; color:#3B6D11;">✓ Registered · ✗ Internet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDU SESSION JOURNEY -->
+  <div class="section">
+    <div class="section-heading">Scenario 2 — PDU session + data flow (steps 8–12)</div>
+    <div class="two-col">
+      <div class="step-grid" style="grid-template-columns: 1fr;">
+        <div class="step-card">
+          <div class="step-num">STEP 8–9</div>
+          <div class="step-title">PDU session request → SMF</div>
+          <div class="step-desc">UE requests data. AMF → SMF. SMF picks UPF, assigns IP (10.45.0.x for SST:1, 10.46.0.x for SST:2).</div>
+          <div class="step-path">PC-1 → PC-2 → PC-3 (SMF)</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">STEP 10–11</div>
+          <div class="step-title">UPF selected + tunnel created</div>
+          <div class="step-desc">GTP-U tunnel established between gNB and UPF. uesimtun0 interface appears on UE.</div>
+          <div class="step-path" style="background:#EAF3DE; color:#3B6D11;">ip addr → uesimtun0: 10.45.0.2 ✓</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">STEP 12</div>
+          <div class="step-title">User traffic begins</div>
+          <div class="step-desc">iperf3 / ping packets flow. AMF, AUSF, UDM are completely out of this path.</div>
+          <div class="step-path">UE → gNB → UPF → Internet</div>
+        </div>
+      </div>
+      <div class="flow-wrap">
+        <div class="flow-inner">
+          <div class="flow-box flow-box-blue">UE (10.45.0.2)</div>
+          <div class="flow-arrow">↓ GTP-U tunnel</div>
+          <div class="flow-box flow-box-purple">gNB (PC-2)</div>
+          <div class="flow-arrow">↓ GTP-U</div>
+          <div class="flow-box flow-box-teal">UPF (PC-3)</div>
+          <div class="flow-arrow">↓ NAT → public IP</div>
+          <div class="flow-box flow-box-green">Internet / 8.8.8.8 ✓</div>
+          <div style="margin-top:12px; padding: 0.5rem; background:#f4f4f1; border-radius:8px; font-size:12px; color:#666; text-align:center;">
+            AMF · AUSF · UDM · NSSF<br>
+            <span style="color:#A32D2D; font-weight:600;">NOT in this path</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROL vs USER PLANE in YOUR LAB -->
+  <div class="section">
+    <div class="section-heading">Control plane vs user plane — in your lab</div>
+    <div class="plane-split">
+      <div class="plane-card plane-cp">
+        <div class="plane-title">🧠 Control plane path</div>
+        <div class="plane-item">Used during: registration, auth, slicing</div>
+        <div class="plane-item" style="margin-top:8px;">PC-1 → PC-2 → PC-3</div>
+        <div class="plane-item">AMF · AUSF · UDM · NSSF · SMF</div>
+        <div class="plane-item">Protocol: NGAP over SCTP</div>
+      </div>
+      <div class="plane-card plane-up">
+        <div class="plane-title">🛣️ User plane path</div>
+        <div class="plane-item">Used during: ping, iperf3, video</div>
+        <div class="plane-item" style="margin-top:8px;">PC-1 → PC-2 → PC-3 (UPF only)</div>
+        <div class="plane-item">UPF only — no other NF</div>
+        <div class="plane-item">Protocol: GTP-U over UDP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEBUGGING MINDSET -->
+  <div class="section">
+    <div class="section-heading">Engineer mindset — 0 Mbps vs low Mbps are different problems</div>
+    <div class="mindset-row">
+      <div class="mindset-card mindset-zero">
+        <div class="mindset-val">0 Mbps</div>
+        <div class="mindset-label">Connectivity problem</div>
+        <div class="mindset-desc">Path is broken somewhere. Check routing, NAT, UPF running, GTP-U tunnel.</div>
+      </div>
+      <div class="mindset-card mindset-low">
+        <div class="mindset-val">Low Mbps</div>
+        <div class="mindset-label">Performance problem</div>
+        <div class="mindset-desc">Path works but congested. Check UPF CPU, queue build-up, shared UPF contention.</div>
+      </div>
+    </div>
+    <div class="insight-red">Never check CPU/bandwidth when throughput = 0 — fix the path first</div>
+  </div>
+
+  <!-- DEBUG CHEATSHEET -->
+  <div class="section">
+    <div class="section-heading">Complete debugging cheatsheet</div>
+    <div class="debug-grid">
+      <div class="debug-card debug-fail">
+        <div class="debug-title">❌ Registration fails</div>
+        <div class="debug-item">→ UE config (IMSI, OPC, MCC/MNC)</div>
+        <div class="debug-item">→ gNB ↔ AMF connectivity (SCTP 38412)</div>
+        <div class="debug-item">→ AMF/AUSF/UDM/SCP running</div>
+        <div class="debug-item">→ MongoDB subscriber record</div>
+        <div class="debug-item">→ <code>tail -f /var/log/open5gs/amf.log</code></div>
+      </div>
+      <div class="debug-card debug-fail">
+        <div class="debug-title">❌ PDU session fails / no IP</div>
+        <div class="debug-item">→ SMF running</div>
+        <div class="debug-item">→ UPF running + ogstun interfaces exist</div>
+        <div class="debug-item">→ SMF ↔ UPF PFCP association</div>
+        <div class="debug-item">→ Slice config (SST/SD) in SMF + UPF yamls</div>
+        <div class="debug-item">→ <code>tail -f /var/log/open5gs/smf.log</code></div>
+      </div>
+      <div class="debug-card debug-fail">
+        <div class="debug-title">❌ IP assigned but ping fails</div>
+        <div class="debug-item">→ NAT/MASQUERADE rule exists?</div>
+        <div class="debug-item">→ <code>iptables -t nat -L -n</code></div>
+        <div class="debug-item">→ IP routing on PC-3</div>
+        <div class="debug-item">→ <code>ip route</code> on UPF host</div>
+        <div class="debug-item">→ UPF GTP-U forwarding</div>
+      </div>
+      <div class="debug-card debug-perf">
+        <div class="debug-title">⚠️ iperf3 low throughput</div>
+        <div class="debug-item">→ Shared UPF contention?</div>
+        <div class="debug-item">→ UPF CPU usage</div>
+        <div class="debug-item">→ Queue build-up / buffer overflow</div>
+        <div class="debug-item">→ NIC bandwidth saturation</div>
+        <div class="debug-item">→ Check delay + jitter too, not just throughput</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIVA -->
+  <div class="section">
+    <div class="section-heading">Viva questions</div>
+    <div class="viva">
+      <div class="viva-q">Q: Registration OK, 10.45.0.2 assigned, iperf3 = 0 Mbps. First 3 checks?</div>
+      <div class="viva-a">1) Check NAT/MASQUERADE rules (iptables -t nat -L -n). 2) Check UPF routing (ip route on PC-3). 3) Check UPF is still running (systemctl status open5gs-upfd). CPU/bandwidth only after confirming traffic is actually flowing.</div>
+      <div class="viva-q">Q: Which components are in the data path during iperf3?</div>
+      <div class="viva-a">Only UPF (and gNB for radio). AMF, AUSF, UDM, NSSF, SMF are control-plane only — they don't touch data packets.</div>
+      <div class="viva-q">Q: Authentication traffic — does it cross the switch between PC-2 and PC-3?</div>
+      <div class="viva-a">No — AMF→AUSF→UDM→MongoDB is all internal to PC-3. Only the initial Registration Request (UE→gNB→AMF) and the challenge/response cross the network.</div>
+      <div class="viva-q">Q: What protocol carries user plane traffic between gNB and UPF?</div>
+      <div class="viva-a">GTP-U (GPRS Tunnelling Protocol - User Plane) over UDP. Control plane uses NGAP over SCTP between gNB and AMF.</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ⭐ Your lab: PC-1 (UEs) → M4300 Switch → PC-2 (gNB) → M4300 Switch → PC-3 (Full 5G Core). Control plane (auth, registration, slicing) uses NGAP/SCTP. User plane (iperf3, ping) uses GTP-U through UPF only. 0 Mbps = broken path. Low Mbps = congestion. Always distinguish these before debugging.
+  </div>
+
+</div>
+</body>
+</html>
